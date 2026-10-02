@@ -73,7 +73,7 @@ export const ch09: Chapter = {
   id: "ch09",
   title: "切り分けのコマンド",
   nodes: [
-    { id: "you", label: "手元の端末", kind: "client", pos: [-7, 0.5, 0] },
+    { id: "you", label: "自分の端末", kind: "client", pos: [-7, 0.5, 0] },
     { id: "dns", label: "DNS", kind: "dns", pos: [-2, 0.55, -4] },
     { id: "fw", label: "ファイアウォール", kind: "firewall", pos: [1, 0.9, 0] },
     { id: "server", label: "shop.example 203.0.113.10", kind: "server", pos: [6, 0.8, 0] },
