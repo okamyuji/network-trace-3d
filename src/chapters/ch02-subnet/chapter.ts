@@ -35,7 +35,7 @@ function viaGateway(): Scenario {
     label: "別のサブネットへ送る",
     steps: [
       { title: "宛先が別のサブネットだと分かる", log: `ネットワーク部が違うので、次の送り先はデフォルトゲートウェイ ${j.nextHop}`, focus: ["pc"], state: { pc: j.text } },
-      { title: "まずゲートウェイ（ルーター）へ渡す", log: "宛先IPは10.0.2.5のまま、ルーターに預ける", from: "pc", to: "router", packet: "→10.0.2.5", focus: ["router"] },
+      { title: "まずゲートウェイ（ルーター）へ渡す", log: "宛先のIPアドレスは10.0.2.5のまま、ルーターに預ける", from: "pc", to: "router", packet: "→10.0.2.5", focus: ["router"] },
       { title: "ルーターが隣のサブネットへ転送する", log: "ルーターは経路表を見て10.0.2.0/24側へ送り出す", from: "router", to: "srv", packet: "→10.0.2.5", focus: ["srv"], state: { srv: "受信 OK" } },
       { title: "返事も同じルーターを経由する", log: "10.0.2.5 からの応答はルーター経由でPCへ戻る", from: "srv", to: "router", packet: "応答" },
       { title: "PCが応答を受け取る", log: "往復ともゲートウェイを通った", from: "router", to: "pc", packet: "応答", focus: ["pc"] },

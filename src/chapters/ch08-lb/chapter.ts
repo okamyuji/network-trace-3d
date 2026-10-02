@@ -18,10 +18,10 @@ function requestSteps(lb: ReturnType<typeof newLb>, client: { id: string; ip: st
   const app = NAMES[r.target]!;
   logs.push(`${app}: remote=${r.remoteAddr} xff=${r.xff}`);
   return [
-    { title: `${client.ip} からリクエストが来る`, log: "クライアントはロードバランサのIPに接続する", from: client.id, to: "lb", packet: "GET /", focus: ["lb"] },
+    { title: `${client.ip} からリクエストが来る`, log: "クライアントはロードバランサのIPアドレスに接続する", from: client.id, to: "lb", packet: "GET /", focus: ["lb"] },
     {
       title: `${app} へ振り分ける`,
-      log: `ロードバランサが新しく接続を張り直すので、${app} から見た送信元は ${r.remoteAddr}。元のIPは X-Forwarded-For: ${r.xff}`,
+      log: `ロードバランサが新しく接続を張り直すので、${app} から見た送信元は ${r.remoteAddr}。元のIPアドレスは X-Forwarded-For: ${r.xff}`,
       from: "lb",
       to: app,
       packet: `XFF: ${r.xff}`,
@@ -35,8 +35,8 @@ function xffScenario(): Scenario {
   const lb = newLb();
   const logs: string[] = [];
   const steps = CLIENTS.flatMap((c) => requestSteps(lb, c, logs));
-  steps.push({ title: "ログの送信元が全部同じになる理由", log: `remote はどれも ${LB_IP}。元のIPを知るには X-Forwarded-For を見る（信頼できる経路で付いた値だけを使う）`, focus: ["log"] });
-  return { id: "xff", label: "ログのIPが全部同じになる", steps };
+  steps.push({ title: "ログの送信元が全部同じになる理由", log: `remote はどれも ${LB_IP}。元のIPアドレスを知るには X-Forwarded-For を見る（信頼できる経路で付いた値だけを使う）`, focus: ["log"] });
+  return { id: "xff", label: "ログの送信元IPアドレスが全部同じになる", steps };
 }
 
 function healthScenario(): Scenario {
