@@ -61,7 +61,7 @@ test("502 はHTTPのやり取りまで進んでおり、問題はプロキシの
   assert.equal(diagnose(w).stoppedAt, "http");
 });
 
-test("各コマンドの出力は、手元で実行した実物と同じ形になる", () => {
+test("各コマンドの出力は、macOSで実行した実物と同じ形になる", () => {
   assert.deepEqual(dig(healthy), { ok: true, exitCode: 0, output: ";; ->>HEADER<<- opcode: QUERY, status: NOERROR\n;; ANSWER SECTION:\nshop.example.\t300\tIN\tA\t203.0.113.10" });
   assert.deepEqual(dig({ ...healthy, dns: "nxdomain" }), { ok: false, exitCode: 0, output: ";; ->>HEADER<<- opcode: QUERY, status: NXDOMAIN" });
   assert.deepEqual(ping(healthy), { ok: true, exitCode: 0, output: "--- shop.example ping statistics ---\n3 packets transmitted, 3 packets received, 0.0% packet loss" });

@@ -31,7 +31,7 @@ function build(id: string, label: string, opts: { sent: Cert[]; host?: string; n
     steps.push({ title: "名前を照合する", log: `証明書の名前 ${leaf.names.join(", ")} とアクセス先 ${host} を比べる`, focus: ["client", "server"] });
     for (const subject of v.path) {
       const node = NODE_OF[subject]!;
-      steps.push({ title: `${subject} を確かめる`, log: "発行者の署名と有効期間を手元で確かめる（CAに問い合わせるわけではない）", focus: [node], state: { [node]: "確認済み" } });
+      steps.push({ title: `${subject} を確かめる`, log: "発行者の署名と有効期間を、クライアントの中で確かめる（CAには問い合わせない）", focus: [node], state: { [node]: "確認済み" } });
     }
     if (!v.ok) {
       const node = NODE_OF[v.path.at(-1) ?? "shop.example"]!;
