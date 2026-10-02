@@ -18,7 +18,7 @@ Webページが表示されるまでの通信と、障害の切り分けを、�
 
 ## 動かし方
 
-Node.js 24 以上と pnpm を使います。
+Node.js 26 以上と pnpm を使います。
 
 ```sh
 pnpm install
