@@ -57,7 +57,7 @@ function build(id: string, label: string, url: string, fail?: Phase): Scenario {
 
 export const ch01: Chapter = {
   id: "ch01",
-  title: "表示までの流れ",
+  title: "ブラウザでの画面表示の流れ",
   nodes: [
     { id: "pc", label: "ブラウザ", kind: "client", pos: [-6, 0.5, 0] },
     { id: "dns", label: "DNS（フルリゾルバー）", kind: "dns", pos: [0, 0.55, -4] },
