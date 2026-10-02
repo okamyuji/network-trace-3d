@@ -26,5 +26,8 @@
     "vite": "^8.3.1"
   },
   "description": "ネットワーク障害の切り分けを、章ごとの3D模式図とCLIで追うための教材",
-  "license": "MIT"
+  "license": "MIT",
+  "engines": {
+    "node": ">=26"
+  }
 }
