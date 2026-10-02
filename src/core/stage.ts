@@ -225,6 +225,8 @@ export function createStage(container: HTMLElement): Stage {
     trail = undefined;
     curve = undefined;
     packet.visible = false;
+    // CSS2D のラベルは親の visible を見ないため、文字を消さないと前の手順のラベルが残る
+    packetLabel.element.textContent = "";
   }
 
   // 失敗は相手の手前で止め、待ちは途中で止める。止まった位置で「どこまで届いたか」を見せる。

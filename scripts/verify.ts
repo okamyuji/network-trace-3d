@@ -68,14 +68,30 @@ for (const ch of chapters) {
 const current = () => page.evaluate(() => (window as any).__demo.current() as { chapter: string; scenario: string; step: number });
 await page.goto(url);
 await page.waitForFunction(() => "__demo" in window);
-await page.selectOption("#chapter", "ch04");
-await page.selectOption("#scenario", "drop");
+// 選んだだけでは何も動かず、「次へ」を押すまで初期状態（0手順目）にとどまること
+const idle = () =>
+  page.evaluate(() => ({
+    step: (window as any).__demo.current().step as number,
+    moving: !(window as any).__demo.settled(),
+    counter: document.getElementById("counter")!.textContent,
+    packets: [...document.querySelectorAll(".packet-label")].filter((e) => e.textContent).length,
+  }));
+for (const [select, value] of [["#chapter", "ch04"], ["#scenario", "drop"]] as const) {
+  await page.selectOption(select, value);
+  await page.waitForTimeout(100);
+  const s = await idle();
+  if (s.step !== 0 || s.moving || s.counter !== "0 / 5" || s.packets !== 0) failures.push(`操作: ${select} を選んだだけで動いた ${JSON.stringify(s)}`);
+}
 await page.click("#next");
 await page.click("#next");
 await page.click("#prev");
 const manual = await current();
-if (manual.chapter !== "ch04" || manual.scenario !== "drop" || manual.step !== 2) failures.push(`操作: 選択と前へ・次へ ${JSON.stringify(manual)}`);
-if (!["ch=ch04", "sc=drop", "step=2"].every((q) => page.url().includes(q))) failures.push(`操作: URL ${page.url()}`);
+if (manual.chapter !== "ch04" || manual.scenario !== "drop" || manual.step !== 1) failures.push(`操作: 選択と前へ・次へ ${JSON.stringify(manual)}`);
+if (!["ch=ch04", "sc=drop", "step=1"].every((q) => page.url().includes(q))) failures.push(`操作: URL ${page.url()}`);
+await page.click("#prev");
+const back = await idle();
+if (back.step !== 0 || back.packets !== 0) failures.push(`操作: 前へで初期状態に戻らない ${JSON.stringify(back)}`);
+await page.click("#next");
 await page.click("#play");
 await page.waitForFunction(() => (window as any).__demo.current().step >= 4, null, { timeout: 10000 }).catch(() => undefined);
 const played = await current();
@@ -85,6 +101,37 @@ await page.goto(`${url}?ch=ch07&sc=expired&step=3`);
 await page.waitForFunction(() => "__demo" in window);
 const linked = await current();
 if (linked.chapter !== "ch07" || linked.scenario !== "expired" || linked.step !== 3) failures.push(`操作: URLから直接開けない ${JSON.stringify(linked)}`);
+await page.goto(`${url}?ch=ch07&sc=expired&step=0`);
+await page.waitForFunction(() => "__demo" in window);
+const linkedIdle = await idle();
+if (linkedIdle.step !== 0 || linkedIdle.packets !== 0) failures.push(`操作: step=0 で初期状態を開けない ${JSON.stringify(linkedIdle)}`);
+// 「次へ」を1回押すごとに、右側の説明と立体図のパケットが同じ手順を指していることを確かめる
+let synced = 0;
+for (const ch of chapters) {
+  for (const sc of ch.scenarios) {
+    await page.goto(`${url}?ch=${ch.id}&sc=${sc.id}&step=0`);
+    await page.waitForFunction(() => "__demo" in window);
+    const expected = await page.evaluate(() => (window as any).__demo.steps() as { title: string; log: string; packet: string | null; status: string }[]);
+    for (let k = 1; k <= expected.length; k++) {
+      await page.click("#next");
+      // ラベルの位置と表示は次の描画で反映されるので、1フレーム待ってから読む
+      await page.evaluate(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))));
+      const e = expected[k - 1]!;
+      const seen = await page.evaluate(() => ({
+        counter: document.getElementById("counter")!.textContent,
+        items: document.querySelectorAll("#log li").length,
+        last: document.querySelector("#log li:last-child")?.textContent ?? "",
+        title: document.getElementById("step-title")!.textContent,
+        packets: [...document.querySelectorAll(".packet-label")].map((el) => el.textContent).filter(Boolean),
+      }));
+      const packet = e.packet === null ? [] : [e.packet + (e.status === "fail" ? " ×" : "")].filter(Boolean);
+      const ok = seen.counter === `${k} / ${expected.length}` && seen.items === k && seen.last === e.log && seen.title === e.title && JSON.stringify(seen.packets) === JSON.stringify(packet);
+      if (!ok) failures.push(`同期: ${ch.id}/${sc.id} 次へ${k}回目 期待=${JSON.stringify({ k, log: e.log, packet })} 実際=${JSON.stringify(seen)}`);
+      synced++;
+    }
+  }
+}
+console.log(`「次へ」での同期の検査: ${synced}手順`);
 console.log(`画面操作の検査: 選択→次へ→前へ ${JSON.stringify(manual)} / 自動再生後 step=${played.step} / URL指定 ${JSON.stringify(linked)}`);
 
 await browser.close();

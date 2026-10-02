@@ -32,9 +32,14 @@ for (const target of targets) {
   const frames: { file: string; delay: number }[] = [];
   const total = await page.evaluate(([c, s]) => {
     const demo = (window as any).__demo;
-    demo.open(c, s, 1);
+    // 最初のコマは、まだ何も送っていない初期状態（0 / N）にする
+    demo.open(c, s, 0);
     return demo.current().total as number;
   }, [ch, sc] as const);
+  await page.waitForTimeout(300);
+  const first = join(work, "0000.png");
+  await page.screenshot({ path: first });
+  frames.push({ file: first, delay: SETTLED_DELAY_CS });
   for (let step = 1; step <= total; step++) {
     await page.evaluate(([c, s, n]) => (window as any).__demo.open(c, s, n), [ch, sc, step] as const);
     let last = 0;
