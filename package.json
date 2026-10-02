@@ -1,0 +1,30 @@
+{
+  "name": "network-trace-3d",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@11.20.0",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "typecheck": "tsc --noEmit",
+    "test": "node --test \"src/**/*.test.ts\"",
+    "cli": "node src/cli.ts",
+    "verify": "node scripts/verify.ts",
+    "mutation": "stryker run",
+    "cover": "node scripts/cover.ts"
+  },
+  "dependencies": {
+    "three": "0.186.1"
+  },
+  "devDependencies": {
+    "@stryker-mutator/core": "^10.0.0",
+    "@types/node": "^24.13.6",
+    "@types/three": "0.186.0",
+    "playwright": "1.63.0",
+    "typescript": "7.0.2",
+    "vite": "^8.3.1"
+  },
+  "description": "ネットワーク障害の切り分けを、章ごとの3D模式図とCLIで追うための教材",
+  "license": "MIT"
+}

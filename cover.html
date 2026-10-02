@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1000, initial-scale=1.0" />
+    <title>表紙</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@500;800&display=swap" rel="stylesheet" />
+    <style>
+      html, body { margin: 0; width: 1000px; height: 1400px; overflow: hidden; }
+      body { background: linear-gradient(160deg, #fff3b0 0%, #ffd6e8 45%, #c7f0ff 100%); font-family: "M PLUS Rounded 1c", sans-serif; }
+      #scene { position: absolute; inset: 0; }
+      .title { position: absolute; left: 0; right: 0; top: 70px; text-align: center; color: #2b2d6e; }
+      .badge { display: inline-block; font-weight: 800; font-size: 46px; color: #fff; background: #ff5c8a; padding: 10px 34px; border-radius: 999px; transform: rotate(-3deg); box-shadow: 0 8px 0 #c93d68; }
+      .main { margin-top: 26px; font-weight: 800; font-size: 104px; line-height: 1.12; letter-spacing: 0.02em; text-shadow: 6px 6px 0 #fff, 9px 9px 0 rgba(43, 45, 110, 0.18); }
+      .sub { position: absolute; left: 0; right: 0; bottom: 92px; text-align: center; font-weight: 800; font-size: 40px; color: #2b2d6e; }
+      .sub span { background: #fff; padding: 12px 30px; border-radius: 20px; box-shadow: 0 8px 0 rgba(43, 45, 110, 0.15); }
+    </style>
+  </head>
+  <body>
+    <div id="scene"></div>
+    <div class="title">
+      <div class="badge">目で見てわかる！</div>
+      <div class="main">ネットワーク<br />入門</div>
+    </div>
+    <div class="sub"><span>通信が止まる場所を3Dで追いかける</span></div>
+    <script type="module" src="/src/cover.ts"></script>
+  </body>
+</html>
