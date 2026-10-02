@@ -17,7 +17,8 @@ const stage = createStage(el("stage"));
 
 let chapter: Chapter;
 let scenario: Scenario;
-let index = 0;
+// -1 は「まだ何も送っていない」初期状態（画面では 0 / N）。選んだだけでは動かさない
+let index = -1;
 let timer: number | undefined;
 
 function option(value: string, text: string): HTMLOptionElement {
@@ -33,7 +34,7 @@ function render(): void {
   const state = Object.assign({}, ...scenario.steps.slice(0, index + 1).map((s) => s.state ?? {}));
   stage.show(step && { ...step, state });
   counter.textContent = `${index + 1} / ${scenario.steps.length}`;
-  title.textContent = step?.title ?? "";
+  title.textContent = step?.title ?? "「次へ」で1手順目を始めます";
   log.replaceChildren(
     ...scenario.steps.slice(0, index + 1).map((s, i) => {
       const li = document.createElement("li");
@@ -47,14 +48,18 @@ function render(): void {
   history.replaceState(null, "", `?${params}`);
 }
 
-function selectScenario(id: string | null, step = 1): void {
+function clampIndex(i: number): number {
+  return Math.min(Math.max(i, -1), scenario.steps.length - 1);
+}
+
+function selectScenario(id: string | null, step = 0): void {
   scenario = chapter.scenarios.find((s) => s.id === id) ?? chapter.scenarios[0]!;
   scenarioSelect.value = scenario.id;
-  index = Math.min(Math.max(step - 1, 0), scenario.steps.length - 1);
+  index = clampIndex(step - 1);
   render();
 }
 
-function selectChapter(id: string | null, sc: string | null = null, step = 1): void {
+function selectChapter(id: string | null, sc: string | null = null, step = 0): void {
   chapter = chapters.find((c) => c.id === id) ?? chapters[0]!;
   chapterSelect.value = chapter.id;
   scenarioSelect.replaceChildren(...chapter.scenarios.map((s) => option(s.id, s.label)));
@@ -63,7 +68,7 @@ function selectChapter(id: string | null, sc: string | null = null, step = 1): v
 }
 
 function go(delta: number): void {
-  index = Math.min(Math.max(index + delta, 0), scenario.steps.length - 1);
+  index = clampIndex(index + delta);
   render();
 }
 
@@ -87,13 +92,14 @@ el("play").addEventListener("click", () => {
 });
 
 const params = new URLSearchParams(location.search);
-selectChapter(params.get("ch"), params.get("sc"), Number(params.get("step") ?? 1));
+selectChapter(params.get("ch"), params.get("sc"), Number(params.get("step")) || 0);
 
 // E2E がブラウザ外から手順を進めて状態を確かめるための窓口
 Object.assign(window, {
   __demo: {
     chapters: () => chapters.map((c) => ({ id: c.id, scenarios: c.scenarios.map((s) => ({ id: s.id, steps: s.steps.length })) })),
     open: (ch: string, sc: string, step: number) => { stop(); selectChapter(ch, sc, step); },
+    steps: () => scenario.steps.map((s) => ({ title: s.title, log: s.log, packet: s.from && s.to ? s.packet ?? "" : null, status: s.status ?? "ok" })),
     current: () => ({ chapter: chapter.id, scenario: scenario.id, step: index + 1, total: scenario.steps.length, title: title.textContent }),
     renderCalls: () => stage.renderCalls(),
     settled: () => stage.settled(),

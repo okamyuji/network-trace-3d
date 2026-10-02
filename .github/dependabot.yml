@@ -1,10 +1,15 @@
 version: 2
 updates:
+  # 手元の pnpm は公開から7日未満の版を拒否するので、提案も7日たった版に合わせる
   - package-ecosystem: github-actions
     directory: /
     schedule:
       interval: weekly
+    cooldown:
+      default-days: 7
   - package-ecosystem: npm
     directory: /
     schedule:
       interval: weekly
+    cooldown:
+      default-days: 7

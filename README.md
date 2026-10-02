@@ -45,10 +45,6 @@ pnpm mutation               # StrykerJS による変異テスト
 
 `stryker.config.json` の `tsconfigFile` は、存在しないファイルを意図して指しています。TypeScript 7 は JavaScript の API を持たないため、StrykerJS の tsconfig 読み込みを止める必要があるからです。
 
-## 表紙
-
-`cover.html` が book の表紙です。`pnpm cover <出力先.png>` で 1000x1400 の PNG に書き出します。
-
 ## ライセンス
 
 MIT
