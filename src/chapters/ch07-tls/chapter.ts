@@ -24,7 +24,7 @@ function build(id: string, label: string, opts: { sent: Cert[]; host?: string; n
   const chainText = opts.sent.map((c, i) => `${i + 1}. ${c.subject}（〜${c.notAfter}）`).join("\n");
   const steps: Step[] = [
     { title: `${host} に TLS 接続を始める（ClientHello）`, log: `時刻 ${now}。対応する暗号方式と、接続したいホスト名を伝える`, from: "client", to: "server", packet: "ClientHello", focus: ["server"], state: { client: "信頼するルート:\nExample Root CA" } },
-    { title: "サーバーが証明書の束を送る", log: `送られてきた順: ${opts.sent.map((c) => c.subject).join(" → ")}`, from: "server", to: "client", packet: "Certificate", focus: ["client"], state: { server: chainText } },
+    { title: "サーバーが証明書チェーンを送る", log: `送られてきた順: ${opts.sent.map((c) => c.subject).join(" → ")}`, from: "server", to: "client", packet: "Certificate", focus: ["client"], state: { server: chainText } },
   ];
   if (verify) {
     const v = verifyChain(input);

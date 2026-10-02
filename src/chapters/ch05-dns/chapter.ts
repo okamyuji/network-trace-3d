@@ -63,7 +63,7 @@ function changeScenario(): Scenario {
     focus: ["auth"],
     state: { auth: "A 203.0.113.20（変更後）" },
   };
-  return { id: "change", label: "IPを変えても古い値が返り続ける", steps: [...first, changed, ...lookup(resolver, 100), ...lookup(resolver, 300)] };
+  return { id: "change", label: "IPアドレスを変えても古い値が返り続ける", steps: [...first, changed, ...lookup(resolver, 100), ...lookup(resolver, 300)] };
 }
 
 export const ch05: Chapter = {

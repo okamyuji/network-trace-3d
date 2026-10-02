@@ -12,7 +12,7 @@ test("ロードバランサは振り分け先を順番に回す", () => {
   assert.deepEqual([1, 2, 3, 4].map(() => lb.forward("203.0.113.7").target), ["a", "b", "c", "a"]);
 });
 
-test("アプリのログに残る送信元はロードバランサのIPで、元のIPは X-Forwarded-For に入る", () => {
+test("アプリのログに残る送信元はロードバランサのIPアドレスで、元のIPアドレスは X-Forwarded-For に入る", () => {
   const lb = createBalancer({ ip: "10.0.0.5", targets: ["a"], unhealthyThreshold: 2, healthyThreshold: 2 });
   const seen = ["203.0.113.7", "198.51.100.23"].map((ip) => lb.forward(ip));
   assert.deepEqual(seen.map((s) => s.remoteAddr), ["10.0.0.5", "10.0.0.5"]);

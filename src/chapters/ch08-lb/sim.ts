@@ -38,7 +38,7 @@ export function createBalancer(config: {
     }
   }
 
-  /** クライアントのIPから来たリクエストを振り分け、アプリ側から見える情報を返す */
+  /** クライアントのIPアドレスから来たリクエストを振り分け、アプリ側から見える情報を返す */
   function forward(clientIp: string, xff?: string): { target: string; remoteAddr: string; xff: string } {
     // 全部が不健全なときは全部へ振り分ける。AWS ALB の fail open と同じ考え方
     const pool = inService().length > 0 ? inService() : targets;
