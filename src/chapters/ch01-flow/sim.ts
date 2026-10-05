@@ -28,7 +28,10 @@ export function loadPage(
   options: { fail?: Phase },
 ): { target: Target; phases: { phase: Phase; ok: boolean }[]; failedAt: Phase | null } {
   const target = parseTarget(text);
-  const order: Phase[] = target.scheme === "https" ? ["dns", "tcp", "tls", "http", "render"] : ["dns", "tcp", "http", "render"];
+  const order: Phase[] =
+    target.scheme === "https"
+      ? ["dns", "tcp", "tls", "http", "render"]
+      : ["dns", "tcp", "http", "render"];
   const phases: { phase: Phase; ok: boolean }[] = [];
   for (const phase of order) {
     const ok = options.fail !== phase;

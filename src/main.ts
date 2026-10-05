@@ -79,10 +79,22 @@ function stop(): void {
 }
 
 chapterSelect.append(...chapters.map((c) => option(c.id, c.title)));
-chapterSelect.addEventListener("change", () => { stop(); selectChapter(chapterSelect.value); });
-scenarioSelect.addEventListener("change", () => { stop(); selectScenario(scenarioSelect.value); });
-el("prev").addEventListener("click", () => { stop(); go(-1); });
-el("next").addEventListener("click", () => { stop(); go(1); });
+chapterSelect.addEventListener("change", () => {
+  stop();
+  selectChapter(chapterSelect.value);
+});
+scenarioSelect.addEventListener("change", () => {
+  stop();
+  selectScenario(scenarioSelect.value);
+});
+el("prev").addEventListener("click", () => {
+  stop();
+  go(-1);
+});
+el("next").addEventListener("click", () => {
+  stop();
+  go(1);
+});
 el("play").addEventListener("click", () => {
   if (timer !== undefined) return stop();
   if (index === scenario.steps.length - 1) index = -1;
@@ -97,10 +109,29 @@ selectChapter(params.get("ch"), params.get("sc"), Number(params.get("step")) || 
 // E2E がブラウザ外から手順を進めて状態を確かめるための窓口
 Object.assign(window, {
   __demo: {
-    chapters: () => chapters.map((c) => ({ id: c.id, scenarios: c.scenarios.map((s) => ({ id: s.id, steps: s.steps.length })) })),
-    open: (ch: string, sc: string, step: number) => { stop(); selectChapter(ch, sc, step); },
-    steps: () => scenario.steps.map((s) => ({ title: s.title, log: s.log, packet: s.from && s.to ? s.packet ?? "" : null, status: s.status ?? "ok" })),
-    current: () => ({ chapter: chapter.id, scenario: scenario.id, step: index + 1, total: scenario.steps.length, title: title.textContent }),
+    chapters: () =>
+      chapters.map((c) => ({
+        id: c.id,
+        scenarios: c.scenarios.map((s) => ({ id: s.id, steps: s.steps.length })),
+      })),
+    open: (ch: string, sc: string, step: number) => {
+      stop();
+      selectChapter(ch, sc, step);
+    },
+    steps: () =>
+      scenario.steps.map((s) => ({
+        title: s.title,
+        log: s.log,
+        packet: s.from && s.to ? (s.packet ?? "") : null,
+        status: s.status ?? "ok",
+      })),
+    current: () => ({
+      chapter: chapter.id,
+      scenario: scenario.id,
+      step: index + 1,
+      total: scenario.steps.length,
+      title: title.textContent,
+    }),
     renderCalls: () => stage.renderCalls(),
     settled: () => stage.settled(),
   },

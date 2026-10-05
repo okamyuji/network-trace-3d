@@ -2,7 +2,16 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { type World, curl, diagnose, dig, ping } from "./sim.ts";
 
-const healthy: World = { host: "shop.example", ip: "203.0.113.10", dns: "ok", hostUp: true, icmpAllowed: true, port: "open", cert: "ok", status: 200 };
+const healthy: World = {
+  host: "shop.example",
+  ip: "203.0.113.10",
+  dns: "ok",
+  hostUp: true,
+  icmpAllowed: true,
+  port: "open",
+  cert: "ok",
+  status: 200,
+};
 
 test("正常なら dig は IP を、ping は応答を、curl は 200 を返す", () => {
   assert.match(dig(healthy).output, /status: NOERROR/);
@@ -62,14 +71,43 @@ test("502 はHTTPのやり取りまで進んでおり、問題はプロキシの
 });
 
 test("各コマンドの出力は、macOSで実行した実物と同じ形になる", () => {
-  assert.deepEqual(dig(healthy), { ok: true, exitCode: 0, output: ";; ->>HEADER<<- opcode: QUERY, status: NOERROR\n;; ANSWER SECTION:\nshop.example.\t300\tIN\tA\t203.0.113.10" });
-  assert.deepEqual(dig({ ...healthy, dns: "nxdomain" }), { ok: false, exitCode: 0, output: ";; ->>HEADER<<- opcode: QUERY, status: NXDOMAIN" });
-  assert.deepEqual(ping(healthy), { ok: true, exitCode: 0, output: "--- shop.example ping statistics ---\n3 packets transmitted, 3 packets received, 0.0% packet loss" });
-  assert.deepEqual(ping({ ...healthy, icmpAllowed: false }), { ok: false, exitCode: 2, output: "--- shop.example ping statistics ---\n3 packets transmitted, 0 packets received, 100.0% packet loss" });
-  assert.deepEqual(ping({ ...healthy, dns: "nxdomain" }), { ok: false, exitCode: 68, output: "ping: cannot resolve shop.example: Unknown host" });
+  assert.deepEqual(dig(healthy), {
+    ok: true,
+    exitCode: 0,
+    output:
+      ";; ->>HEADER<<- opcode: QUERY, status: NOERROR\n;; ANSWER SECTION:\nshop.example.\t300\tIN\tA\t203.0.113.10",
+  });
+  assert.deepEqual(dig({ ...healthy, dns: "nxdomain" }), {
+    ok: false,
+    exitCode: 0,
+    output: ";; ->>HEADER<<- opcode: QUERY, status: NXDOMAIN",
+  });
+  assert.deepEqual(ping(healthy), {
+    ok: true,
+    exitCode: 0,
+    output:
+      "--- shop.example ping statistics ---\n3 packets transmitted, 3 packets received, 0.0% packet loss",
+  });
+  assert.deepEqual(ping({ ...healthy, icmpAllowed: false }), {
+    ok: false,
+    exitCode: 2,
+    output:
+      "--- shop.example ping statistics ---\n3 packets transmitted, 0 packets received, 100.0% packet loss",
+  });
+  assert.deepEqual(ping({ ...healthy, dns: "nxdomain" }), {
+    ok: false,
+    exitCode: 68,
+    output: "ping: cannot resolve shop.example: Unknown host",
+  });
 
-  const head = "* Host shop.example:443 was resolved.\n* IPv4: 203.0.113.10\n*   Trying 203.0.113.10:443...\n";
-  assert.deepEqual(curl({ ...healthy, dns: "nxdomain" }), { ok: false, exitCode: 6, output: "* Could not resolve host: shop.example\ncurl: (6) Could not resolve host: shop.example" });
+  const head =
+    "* Host shop.example:443 was resolved.\n* IPv4: 203.0.113.10\n*   Trying 203.0.113.10:443...\n";
+  assert.deepEqual(curl({ ...healthy, dns: "nxdomain" }), {
+    ok: false,
+    exitCode: 6,
+    output:
+      "* Could not resolve host: shop.example\ncurl: (6) Could not resolve host: shop.example",
+  });
   assert.deepEqual(curl({ ...healthy, port: "filtered" }), {
     ok: false,
     exitCode: 28,
@@ -94,9 +132,18 @@ test("各コマンドの出力は、macOSで実行した実物と同じ形にな
 });
 
 test("ステータス行の理由句は代表的なコードについて正しく付く", () => {
-  const reasons: [number, string][] = [[404, "Not Found"], [500, "Internal Server Error"], [502, "Bad Gateway"], [503, "Service Unavailable"], [504, "Gateway Timeout"]];
+  const reasons: [number, string][] = [
+    [404, "Not Found"],
+    [500, "Internal Server Error"],
+    [502, "Bad Gateway"],
+    [503, "Service Unavailable"],
+    [504, "Gateway Timeout"],
+  ];
   for (const [status, reason] of reasons) {
-    assert.ok(curl({ ...healthy, status }).output.endsWith(`< HTTP/1.1 ${status} ${reason}`), String(status));
+    assert.ok(
+      curl({ ...healthy, status }).output.endsWith(`< HTTP/1.1 ${status} ${reason}`),
+      String(status),
+    );
   }
 });
 
@@ -106,10 +153,28 @@ test("500ちょうどでもアプリ側の問題と判断する", () => {
 
 test("判断の説明文は止まった場所ごとに決まった文になる", () => {
   assert.equal(diagnose(healthy).note, "最後まで通っている");
-  assert.equal(diagnose({ ...healthy, port: "closed" }).note, "ホストには届いたが、そのポートで誰も待ち受けていないか、拒否された");
-  assert.equal(diagnose({ ...healthy, port: "filtered" }).note, "ping は返るのにポートへの接続だけ時間切れ。ファイアウォールで捨てられている可能性が高い");
-  assert.equal(diagnose({ ...healthy, hostUp: false }).note, "ping も接続も返らない。ホストが止まっているか、経路の途中で全部捨てられている");
-  assert.equal(diagnose({ ...healthy, cert: "expired" }).note, "TCPの接続まではできた。証明書の検証で止まっている");
-  assert.equal(diagnose({ ...healthy, status: 502 }).note, "HTTPのやり取りまでは進んだ。502 の原因はプロキシの奥にある");
-  assert.equal(diagnose({ ...healthy, icmpAllowed: false }).note, "最後まで通っている（ping が返らないのは ICMP が塞がれているだけで、サーバーは動いている）");
+  assert.equal(
+    diagnose({ ...healthy, port: "closed" }).note,
+    "ホストには届いたが、そのポートで誰も待ち受けていないか、拒否された",
+  );
+  assert.equal(
+    diagnose({ ...healthy, port: "filtered" }).note,
+    "ping は返るのにポートへの接続だけ時間切れ。ファイアウォールで捨てられている可能性が高い",
+  );
+  assert.equal(
+    diagnose({ ...healthy, hostUp: false }).note,
+    "ping も接続も返らない。ホストが止まっているか、経路の途中で全部捨てられている",
+  );
+  assert.equal(
+    diagnose({ ...healthy, cert: "expired" }).note,
+    "TCPの接続まではできた。証明書の検証で止まっている",
+  );
+  assert.equal(
+    diagnose({ ...healthy, status: 502 }).note,
+    "HTTPのやり取りまでは進んだ。502 の原因はプロキシの奥にある",
+  );
+  assert.equal(
+    diagnose({ ...healthy, icmpAllowed: false }).note,
+    "最後まで通っている（ping が返らないのは ICMP が塞がれているだけで、サーバーは動いている）",
+  );
 });

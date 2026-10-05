@@ -1,18 +1,55 @@
 import type { Chapter, Scenario, Step, StepStatus } from "../../core/types.ts";
 import { type CurlResult, type Layer, type World, curl, diagnose, dig, ping } from "./sim.ts";
 
-const BASE: World = { host: "shop.example", ip: "203.0.113.10", dns: "ok", hostUp: true, icmpAllowed: true, port: "open", cert: "ok", status: 200 };
+const BASE: World = {
+  host: "shop.example",
+  ip: "203.0.113.10",
+  dns: "ok",
+  hostUp: true,
+  icmpAllowed: true,
+  port: "open",
+  cert: "ok",
+  status: 200,
+};
 
-const NODE_OF: Record<Layer, string> = { dns: "dns", reach: "server", port: "fw", tls: "server", http: "server" };
-const LAYER_NAME: Record<Layer, string> = { dns: "名前解決", reach: "到達性", port: "ポート", tls: "TLS（証明書）", http: "HTTP（アプリ側）" };
+const NODE_OF: Record<Layer, string> = {
+  dns: "dns",
+  reach: "server",
+  port: "fw",
+  tls: "server",
+  http: "server",
+};
+const LAYER_NAME: Record<Layer, string> = {
+  dns: "名前解決",
+  reach: "到達性",
+  port: "ポート",
+  tls: "TLS（証明書）",
+  http: "HTTP（アプリ側）",
+};
 
 const lastLines = (text: string, n: number): string => text.split("\n").slice(-n).join("\n");
 
 function digSteps(w: World): Step[] {
   const d = dig(w);
   return [
-    { title: "dig で名前解決を確かめる", log: "dig shop.example", from: "you", to: "dns", packet: "A?", focus: ["dns"] },
-    { title: d.ok ? "IPアドレスが返る" : "名前が見つからない", log: lastLines(d.output, 2), from: "dns", to: "you", packet: d.ok ? w.ip : "NXDOMAIN", status: d.ok ? "ok" : "fail", focus: ["you"], state: { you: lastLines(d.output, 1) } },
+    {
+      title: "dig で名前解決を確かめる",
+      log: "dig shop.example",
+      from: "you",
+      to: "dns",
+      packet: "A?",
+      focus: ["dns"],
+    },
+    {
+      title: d.ok ? "IPアドレスが返る" : "名前が見つからない",
+      log: lastLines(d.output, 2),
+      from: "dns",
+      to: "you",
+      packet: d.ok ? w.ip : "NXDOMAIN",
+      status: d.ok ? "ok" : "fail",
+      focus: ["you"],
+      state: { you: lastLines(d.output, 1) },
+    },
   ];
 }
 
@@ -25,21 +62,68 @@ function pingSteps(w: World): Step[] {
   const p = ping(w);
   const to = w.icmpAllowed ? "server" : "fw";
   const steps: Step[] = [
-    { title: "ping で到達性を確かめる", log: "ping -c 3 shop.example", ...move(w, to, "ICMP echo"), status: p.ok ? "ok" : "fail", focus: [w.dns === "ok" ? to : "you"], state: { you: lastLines(p.output, 1) } },
+    {
+      title: "ping で到達性を確かめる",
+      log: "ping -c 3 shop.example",
+      ...move(w, to, "ICMP echo"),
+      status: p.ok ? "ok" : "fail",
+      focus: [w.dns === "ok" ? to : "you"],
+      state: { you: lastLines(p.output, 1) },
+    },
   ];
-  if (p.ok) steps.push({ title: "応答が返る", log: lastLines(p.output, 1), from: "server", to: "you", packet: "ICMP reply", focus: ["you"] });
+  if (p.ok)
+    steps.push({
+      title: "応答が返る",
+      log: lastLines(p.output, 1),
+      from: "server",
+      to: "you",
+      packet: "ICMP reply",
+      focus: ["you"],
+    });
   return steps;
 }
 
-const CURL_STATUS: Record<CurlResult["exitCode"], StepStatus> = { 0: "ok", 6: "fail", 7: "fail", 28: "wait", 60: "ok" };
+const CURL_STATUS: Record<CurlResult["exitCode"], StepStatus> = {
+  0: "ok",
+  6: "fail",
+  7: "fail",
+  28: "wait",
+  60: "ok",
+};
 
 function curlReply(c: CurlResult, http: boolean): Step | undefined {
   const last = lastLines(c.output, 2);
-  if (c.exitCode === 7) return { title: "RST が返る", log: last, from: "server", to: "you", packet: "RST", status: "fail", focus: ["you"] };
-  if (c.exitCode === 60) return { title: "証明書の検証で止まる", log: last, from: "server", to: "you", packet: "証明書", status: "fail", focus: ["you"] };
+  if (c.exitCode === 7)
+    return {
+      title: "RST が返る",
+      log: last,
+      from: "server",
+      to: "you",
+      packet: "RST",
+      status: "fail",
+      focus: ["you"],
+    };
+  if (c.exitCode === 60)
+    return {
+      title: "証明書の検証で止まる",
+      log: last,
+      from: "server",
+      to: "you",
+      packet: "証明書",
+      status: "fail",
+      focus: ["you"],
+    };
   if (c.exitCode !== 0) return undefined;
   const line = lastLines(c.output, 1);
-  return { title: "HTTPの応答が返る", log: line, from: "server", to: "you", packet: line.replace("< HTTP/1.1 ", ""), status: http ? "fail" : "ok", focus: ["you"] };
+  return {
+    title: "HTTPの応答が返る",
+    log: line,
+    from: "server",
+    to: "you",
+    packet: line.replace("< HTTP/1.1 ", ""),
+    status: http ? "fail" : "ok",
+    focus: ["you"],
+  };
 }
 
 function curlSteps(w: World, http: boolean): Step[] {
@@ -66,7 +150,11 @@ function build(id: string, label: string, change: Partial<World>): Scenario {
     status: v.stoppedAt ? "fail" : "ok",
     focus: [v.stoppedAt ? NODE_OF[v.stoppedAt] : "you"],
   };
-  return { id, label, steps: [...digSteps(w), ...pingSteps(w), ...curlSteps(w, v.stoppedAt === "http"), verdict] };
+  return {
+    id,
+    label,
+    steps: [...digSteps(w), ...pingSteps(w), ...curlSteps(w, v.stoppedAt === "http"), verdict],
+  };
 }
 
 export const ch09: Chapter = {

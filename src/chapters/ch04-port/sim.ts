@@ -34,7 +34,9 @@ export function evaluateIptables(
   port: number,
 ): { target: Target; rule: number | null } {
   const index = rules.findIndex((r) => r.dport === port);
-  return index === -1 ? { target: policy, rule: null } : { target: rules[index]!.target, rule: index + 1 };
+  return index === -1
+    ? { target: policy, rule: null }
+    : { target: rules[index]!.target, rule: index + 1 };
 }
 
 export function securityGroupAllows(rules: SgRule[], port: number): boolean {
@@ -53,22 +55,46 @@ export function connect(input: {
     throw new Error(`ポート番号は1〜65535の整数で指定します: ${port}`);
   }
   if (!securityGroupAllows(sg, port)) {
-    return { outcome: "timeout", stoppedAt: "sg", reason: `セキュリティグループに ${port}番を許可する規則がなく、パケットが捨てられた` };
+    return {
+      outcome: "timeout",
+      stoppedAt: "sg",
+      reason: `セキュリティグループに ${port}番を許可する規則がなく、パケットが捨てられた`,
+    };
   }
   const fw = evaluateIptables(iptables, policy, port);
   const which = fw.rule === null ? "ポリシー" : `${fw.rule}行目`;
   if (fw.target === "DROP") {
-    return { outcome: "timeout", stoppedAt: "iptables", reason: `iptables の${which}が DROP で、何も返さずに捨てた` };
+    return {
+      outcome: "timeout",
+      stoppedAt: "iptables",
+      reason: `iptables の${which}が DROP で、何も返さずに捨てた`,
+    };
   }
   if (fw.target === "REJECT") {
-    return { outcome: "refused", stoppedAt: "iptables", reason: `iptables の${which}が REJECT で、拒否の返事を返した` };
+    return {
+      outcome: "refused",
+      stoppedAt: "iptables",
+      reason: `iptables の${which}が REJECT で、拒否の返事を返した`,
+    };
   }
   const listener = host.listening.find((l) => l.port === port);
   if (!listener) {
-    return { outcome: "refused", stoppedAt: "server", reason: `${port}番で待ち受けているプログラムがなく、OSがRSTを返した` };
+    return {
+      outcome: "refused",
+      stoppedAt: "server",
+      reason: `${port}番で待ち受けているプログラムがなく、OSがRSTを返した`,
+    };
   }
   if (listener.addr === "127.0.0.1") {
-    return { outcome: "refused", stoppedAt: "server", reason: `${port}番は 127.0.0.1 でだけ待ち受けており、外から来た接続にはOSがRSTを返した` };
+    return {
+      outcome: "refused",
+      stoppedAt: "server",
+      reason: `${port}番は 127.0.0.1 でだけ待ち受けており、外から来た接続にはOSがRSTを返した`,
+    };
   }
-  return { outcome: "connected", stoppedAt: "server", reason: `${port}番で待ち受けているプログラムが接続を受け付けた` };
+  return {
+    outcome: "connected",
+    stoppedAt: "server",
+    reason: `${port}番で待ち受けているプログラムが接続を受け付けた`,
+  };
 }

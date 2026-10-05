@@ -16,8 +16,14 @@ test("TCPの確認応答番号は「次に欲しいバイト位置」を表す",
   const { events } = tcpTransfer({ segments: 2, lose: [] });
   const data = events.filter((e) => e.kind === "DATA");
   const acks = events.filter((e) => e.kind === "ACK" && e.from === "server");
-  assert.deepEqual(data.map((d) => d.seq), [101, 201]);
-  assert.deepEqual(acks.slice(0, 2).map((a) => a.ack), [201, 301]);
+  assert.deepEqual(
+    data.map((d) => d.seq),
+    [101, 201],
+  );
+  assert.deepEqual(
+    acks.slice(0, 2).map((a) => a.ack),
+    [201, 301],
+  );
 });
 
 test("TCPは失われた区切りをタイムアウト後に送り直し、受け手には全部が順に届く", () => {
@@ -27,18 +33,19 @@ test("TCPは失われた区切りをタイムアウト後に送り直し、受�
   assert.equal(lost.length, 1);
   assert.equal(lost[0]?.segment, 2);
   const retrans = result.events.filter((e) => e.kind === "DATA" && e.retransmit);
-  assert.deepEqual(retrans.map((e) => e.segment), [2]);
+  assert.deepEqual(
+    retrans.map((e) => e.segment),
+    [2],
+  );
   assert.ok(result.events.some((e) => e.kind === "TIMEOUT"));
 });
 
 test("TCPは最後にFINを双方向で交わして接続を閉じる", () => {
   const { events } = tcpTransfer({ segments: 1, lose: [] });
-  assert.deepEqual(events.slice(-4).map((e) => `${e.from}:${e.kind}`), [
-    "client:FIN",
-    "server:ACK",
-    "server:FIN",
-    "client:ACK",
-  ]);
+  assert.deepEqual(
+    events.slice(-4).map((e) => `${e.from}:${e.kind}`),
+    ["client:FIN", "server:ACK", "server:FIN", "client:ACK"],
+  );
 });
 
 test("UDPは失われたデータグラムを送り直さず、受け手には残りだけが届く", () => {
@@ -67,7 +74,10 @@ test("最初と最後の区切りも失う番号として指定できる", () =>
 
 test("時間切れはクライアント側の出来事として記録され、終了時の番号は送ったバイト数を反映する", () => {
   const { events } = tcpTransfer({ segments: 1, lose: [1] });
-  assert.deepEqual(events.find((e) => e.kind === "TIMEOUT"), { from: "client", kind: "TIMEOUT", segment: 1 });
+  assert.deepEqual(
+    events.find((e) => e.kind === "TIMEOUT"),
+    { from: "client", kind: "TIMEOUT", segment: 1 },
+  );
   assert.deepEqual(events.slice(-5), [
     { from: "server", kind: "ACK", seq: 301, ack: 201 },
     { from: "client", kind: "FIN", seq: 201 },

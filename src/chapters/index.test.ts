@@ -16,10 +16,19 @@ test("すべての手順が、章に存在するノードだけを参照して�
       assert.ok(s.steps.length > 0, `${c.id}/${s.id} に手順がない`);
       s.steps.forEach((step, i) => {
         const where = `${c.id}/${s.id}#${i + 1}`;
-        for (const ref of [step.from, step.to, ...(step.focus ?? []), ...Object.keys(step.state ?? {})]) {
+        for (const ref of [
+          step.from,
+          step.to,
+          ...(step.focus ?? []),
+          ...Object.keys(step.state ?? {}),
+        ]) {
           if (ref !== undefined) assert.ok(ids.has(ref), `${where} が未定義のノード ${ref} を参照`);
         }
-        assert.equal(step.from === undefined, step.to === undefined, `${where} は from と to の片方だけを持つ`);
+        assert.equal(
+          step.from === undefined,
+          step.to === undefined,
+          `${where} は from と to の片方だけを持つ`,
+        );
         assert.ok(step.title.length > 0 && step.log.length > 0, `${where} の文が空`);
       });
     }

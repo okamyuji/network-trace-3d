@@ -10,7 +10,9 @@ if (!out) {
 }
 const server = await createServer({ logLevel: "error", server: { port: 5176, strictPort: true } });
 await server.listen();
-const browser = await chromium.launch({ args: ["--enable-unsafe-swiftshader", "--use-angle=swiftshader"] });
+const browser = await chromium.launch({
+  args: ["--enable-unsafe-swiftshader", "--use-angle=swiftshader"],
+});
 const page = await browser.newPage({ viewport: { width: 1000, height: 1400 } });
 const errors: string[] = [];
 page.on("pageerror", (e) => errors.push(e.message));

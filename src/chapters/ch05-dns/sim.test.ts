@@ -4,9 +4,24 @@ import { type Authority, createResolver } from "./sim.ts";
 
 function world(ip = "203.0.113.10"): Authority[] {
   return [
-    { server: "root", zone: ".", delegations: { "com.": { server: "tld", ttl: 172800 } }, records: {} },
-    { server: "tld", zone: "com.", delegations: { "example.com.": { server: "auth", ttl: 86400 } }, records: {} },
-    { server: "auth", zone: "example.com.", delegations: {}, records: { "www.example.com.": { ip, ttl: 300 } } },
+    {
+      server: "root",
+      zone: ".",
+      delegations: { "com.": { server: "tld", ttl: 172800 } },
+      records: {},
+    },
+    {
+      server: "tld",
+      zone: "com.",
+      delegations: { "example.com.": { server: "auth", ttl: 86400 } },
+      records: {},
+    },
+    {
+      server: "auth",
+      zone: "example.com.",
+      delegations: {},
+      records: { "www.example.com.": { ip, ttl: 300 } },
+    },
   ];
 }
 
@@ -74,7 +89,13 @@ test("答えは NOERROR として返り、キャッシュから答えたとき�
 
 test("NXDOMAIN はキャッシュからではなく、たどった結果として返る", () => {
   const r = createResolver(world()).resolve("nope.example.com.", 0);
-  assert.deepEqual(r, { ip: null, rcode: "NXDOMAIN", fromCache: false, asked: ["root", "tld", "auth"], ttl: 0 });
+  assert.deepEqual(r, {
+    ip: null,
+    rcode: "NXDOMAIN",
+    fromCache: false,
+    asked: ["root", "tld", "auth"],
+    ttl: 0,
+  });
 });
 
 test("ゾーンの頂点の名前（example.com. そのもの）も引ける", () => {

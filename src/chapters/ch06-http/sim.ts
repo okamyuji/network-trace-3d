@@ -47,6 +47,8 @@ export function proxyRequest(input: {
     case "malformed":
       return { status: 502, madeBy: "proxy" };
     case "slow":
-      return (input.responseSec ?? 0) > input.timeoutSec ? { status: 504, madeBy: "proxy" } : { status: 200, madeBy: "app" };
+      return (input.responseSec ?? 0) > input.timeoutSec
+        ? { status: 504, madeBy: "proxy" }
+        : { status: 200, madeBy: "app" };
   }
 }
