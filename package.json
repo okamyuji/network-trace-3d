@@ -2,17 +2,22 @@
   "name": "network-trace-3d",
   "version": "1.0.0",
   "private": true,
+  "description": "ネットワーク障害の切り分けを、章ごとの3D模式図とCLIで追うための教材",
+  "license": "MIT",
   "type": "module",
-  "packageManager": "pnpm@11.20.0",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "typecheck": "tsc --noEmit",
+    "dev": "vp dev",
+    "build": "vp build",
+    "check": "vp check",
+    "lint": "vp check",
+    "fmt": "vp fmt",
+    "typecheck": "vp check --no-fmt --no-lint",
     "test": "node --test \"src/**/*.test.ts\"",
     "cli": "node src/cli.ts",
     "verify": "node scripts/verify.ts",
     "mutation": "stryker run",
-    "cover": "node scripts/cover.ts"
+    "cover": "node scripts/cover.ts",
+    "prepare": "vp config --no-agent"
   },
   "dependencies": {
     "three": "0.186.1"
@@ -23,11 +28,11 @@
     "@types/three": "0.186.0",
     "playwright": "1.63.0",
     "typescript": "7.0.2",
-    "vite": "^8.3.1"
+    "vite": "catalog:",
+    "vite-plus": "catalog:"
   },
-  "description": "ネットワーク障害の切り分けを、章ごとの3D模式図とCLIで追うための教材",
-  "license": "MIT",
   "engines": {
     "node": ">=26"
-  }
+  },
+  "packageManager": "pnpm@11.20.0"
 }
