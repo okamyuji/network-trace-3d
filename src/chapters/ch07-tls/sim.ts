@@ -26,13 +26,19 @@ export function matchesHost(pattern: string, host: string): boolean {
   return p.every((label, i) => label === h[i] || (i === 0 && label === "*"));
 }
 
-export function verifyChain(input: { sent: Cert[]; host: string; now: string; trust: Cert[] }): VerifyResult {
+export function verifyChain(input: {
+  sent: Cert[];
+  host: string;
+  now: string;
+  trust: Cert[];
+}): VerifyResult {
   const { sent, host, now, trust } = input;
   if (!DATE.test(now)) throw new Error(`日付は YYYY-MM-DD で指定します: ${now}`);
   const path: string[] = [];
   let cert: Cert | undefined = sent[0];
   if (!cert) return { ok: false, error: "unknown-issuer", path };
-  if (!cert.names.some((n) => matchesHost(n, host))) return { ok: false, error: "name-mismatch", path: [cert.subject] };
+  if (!cert.names.some((n) => matchesHost(n, host)))
+    return { ok: false, error: "name-mismatch", path: [cert.subject] };
   for (;;) {
     path.push(cert.subject);
     if (now < cert.notBefore) return { ok: false, error: "not-yet-valid", path };
@@ -49,12 +55,20 @@ export function verifyChain(input: { sent: Cert[]; host: string; now: string; tr
 }
 
 /** 検証を省く（curl の -k に相当）と、暗号化はされるが相手の確認は行われない */
-export function connectTls(input: { sent: Cert[]; host: string; now: string; trust: Cert[]; verify: boolean }): {
+export function connectTls(input: {
+  sent: Cert[];
+  host: string;
+  now: string;
+  trust: Cert[];
+  verify: boolean;
+}): {
   encrypted: boolean;
   authenticated: boolean;
   error: TlsError | null;
 } {
   if (!input.verify) return { encrypted: true, authenticated: false, error: null };
   const r = verifyChain(input);
-  return r.ok ? { encrypted: true, authenticated: true, error: null } : { encrypted: false, authenticated: false, error: r.error ?? null };
+  return r.ok
+    ? { encrypted: true, authenticated: true, error: null }
+    : { encrypted: false, authenticated: false, error: r.error ?? null };
 }

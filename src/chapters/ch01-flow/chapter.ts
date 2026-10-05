@@ -15,33 +15,106 @@ function phaseSteps(phase: Phase, host: string, port: number, path: string): Ste
   switch (phase) {
     case "dns":
       return [
-        { title: "名前からIPアドレスを調べる（DNS）", log: `${host} の IP アドレスをフルリゾルバーに問い合わせる`, from: "pc", to: "dns", packet: `${host} ?`, focus: ["dns"] },
-        { title: "IPアドレスが返る", log: `${host} は ${IP}`, from: "dns", to: "pc", packet: IP, focus: ["pc"], state: { pc: `${host} = ${IP}` } },
+        {
+          title: "名前からIPアドレスを調べる（DNS）",
+          log: `${host} の IP アドレスをフルリゾルバーに問い合わせる`,
+          from: "pc",
+          to: "dns",
+          packet: `${host} ?`,
+          focus: ["dns"],
+        },
+        {
+          title: "IPアドレスが返る",
+          log: `${host} は ${IP}`,
+          from: "dns",
+          to: "pc",
+          packet: IP,
+          focus: ["pc"],
+          state: { pc: `${host} = ${IP}` },
+        },
       ];
     case "tcp":
       return [
-        { title: "TCPの接続を申し込む", log: `${IP}:${port} へ SYN を送る`, from: "pc", to: "web", packet: "SYN", focus: ["web"] },
-        { title: "サーバーが応じる", log: "SYN-ACK が返り、PC が ACK を返して接続ができる", from: "web", to: "pc", packet: "SYN-ACK", focus: ["pc"], state: { web: `LISTEN :${port}` } },
+        {
+          title: "TCPの接続を申し込む",
+          log: `${IP}:${port} へ SYN を送る`,
+          from: "pc",
+          to: "web",
+          packet: "SYN",
+          focus: ["web"],
+        },
+        {
+          title: "サーバーが応じる",
+          log: "SYN-ACK が返り、PC が ACK を返して接続ができる",
+          from: "web",
+          to: "pc",
+          packet: "SYN-ACK",
+          focus: ["pc"],
+          state: { web: `LISTEN :${port}` },
+        },
       ];
     case "tls":
       return [
-        { title: "暗号化の準備をする（TLS）", log: "使う暗号方式を決め、サーバーの証明書を確かめる", from: "pc", to: "web", packet: "ClientHello", focus: ["web"] },
-        { title: "証明書を受け取り検証する", log: "証明書が本物で、期限内で、名前が合っていれば先へ進む", from: "web", to: "pc", packet: "証明書", focus: ["pc"], state: { pc: `${host} = ${IP}\n証明書 OK` } },
+        {
+          title: "暗号化の準備をする（TLS）",
+          log: "使う暗号方式を決め、サーバーの証明書を確かめる",
+          from: "pc",
+          to: "web",
+          packet: "ClientHello",
+          focus: ["web"],
+        },
+        {
+          title: "証明書を受け取り検証する",
+          log: "証明書が本物で、期限内で、名前が合っていれば先へ進む",
+          from: "web",
+          to: "pc",
+          packet: "証明書",
+          focus: ["pc"],
+          state: { pc: `${host} = ${IP}\n証明書 OK` },
+        },
       ];
     case "http":
       return [
-        { title: "HTTPリクエストを送る", log: `GET ${path} を送る`, from: "pc", to: "web", packet: `GET ${path}`, focus: ["web"] },
-        { title: "HTMLが返る", log: "200 OK と HTML が返る", from: "web", to: "pc", packet: "200 OK", focus: ["pc"] },
+        {
+          title: "HTTPリクエストを送る",
+          log: `GET ${path} を送る`,
+          from: "pc",
+          to: "web",
+          packet: `GET ${path}`,
+          focus: ["web"],
+        },
+        {
+          title: "HTMLが返る",
+          log: "200 OK と HTML が返る",
+          from: "web",
+          to: "pc",
+          packet: "200 OK",
+          focus: ["pc"],
+        },
       ];
     case "render":
-      return [{ title: "ブラウザが画面を組み立てる", log: "HTML を読み、必要な CSS や画像を同じ手順で取りに行き、画面に描く", focus: ["pc"], state: { pc: "表示完了" } }];
+      return [
+        {
+          title: "ブラウザが画面を組み立てる",
+          log: "HTML を読み、必要な CSS や画像を同じ手順で取りに行き、画面に描く",
+          focus: ["pc"],
+          state: { pc: "表示完了" },
+        },
+      ];
   }
 }
 
 function build(id: string, label: string, url: string, fail?: Phase): Scenario {
   const r = loadPage(url, fail ? { fail } : {});
   const { host, port, path, scheme } = r.target;
-  const steps: Step[] = [{ title: "URLを分解する", log: `スキーム ${scheme}、ホスト名 ${host}、ポート ${port}、パス ${path}`, focus: ["pc"], state: { pc: `${scheme}://${host}:${port}` } }];
+  const steps: Step[] = [
+    {
+      title: "URLを分解する",
+      log: `スキーム ${scheme}、ホスト名 ${host}、ポート ${port}、パス ${path}`,
+      focus: ["pc"],
+      state: { pc: `${scheme}://${host}:${port}` },
+    },
+  ];
   for (const { phase, ok } of r.phases) {
     const s = phaseSteps(phase, host, port, path);
     if (ok) {
@@ -49,7 +122,12 @@ function build(id: string, label: string, url: string, fail?: Phase): Scenario {
     } else {
       const first = s[0]!;
       steps.push({ ...first, status: "fail", title: `${first.title} → 失敗` });
-      steps.push({ title: "ここで止まる", log: `この先の段階には進まない。ブラウザには${SEEN[phase]}`, status: "fail", focus: ["pc"] });
+      steps.push({
+        title: "ここで止まる",
+        log: `この先の段階には進まない。ブラウザには${SEEN[phase]}`,
+        status: "fail",
+        focus: ["pc"],
+      });
     }
   }
   return { id, label, steps };

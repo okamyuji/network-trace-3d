@@ -42,19 +42,28 @@ export function createResolver(authorities: Authority[]) {
 
   /** 期限内の委任情報のうち、名前に最も近い（長い）ゾーンから始める。なければルートから */
   function startingPoint(name: string, now: number): string {
-    const usable = [...referrals].filter(([zone, entry]) => fresh(entry, now) && isUnder(name, zone));
+    const usable = [...referrals].filter(
+      ([zone, entry]) => fresh(entry, now) && isUnder(name, zone),
+    );
     usable.sort(([a], [b]) => b.length - a.length);
     return usable[0]?.[1].value ?? "root";
   }
 
   function resolve(name: string, now: number): Resolution {
-    if (!name.endsWith(".")) throw new Error(`名前は末尾のドットまで書きます（例: www.example.com.）: "${name}"`);
+    if (!name.endsWith("."))
+      throw new Error(`名前は末尾のドットまで書きます（例: www.example.com.）: "${name}"`);
     if (now < lastNow) throw new Error(`時刻が巻き戻っています: ${now} < ${lastNow}`);
     lastNow = now;
 
     const cached = answers.get(name);
     if (fresh(cached, now)) {
-      return { ip: cached.value.ip, rcode: "NOERROR", fromCache: true, asked: [], ttl: cached.expiresAt - now };
+      return {
+        ip: cached.value.ip,
+        rcode: "NOERROR",
+        fromCache: true,
+        asked: [],
+        ttl: cached.expiresAt - now,
+      };
     }
 
     const asked: string[] = [];

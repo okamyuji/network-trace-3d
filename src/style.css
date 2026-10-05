@@ -1,23 +1,135 @@
-:root { color-scheme: dark; --bg: #0f172a; --panel: #111827; --fg: #e2e8f0; --muted: #94a3b8; --accent: #38bdf8; --fail: #ef4444; --wait: #f59e0b; }
-* { box-sizing: border-box; }
-body { margin: 0; background: var(--bg); color: var(--fg); font: 14px/1.5 system-ui, "Hiragino Sans", sans-serif; height: 100vh; display: flex; flex-direction: column; }
-header { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding: 8px 16px; background: var(--panel); }
-select, button { font: inherit; color: var(--fg); background: #1f2937; border: 1px solid #374151; border-radius: 6px; padding: 4px 10px; }
-button:focus-visible, select:focus-visible { outline: 2px solid var(--accent); }
-main { flex: 1; display: grid; grid-template-columns: 1fr 340px; min-height: 0; }
-#stage { position: relative; min-height: 0; }
-#stage canvas, #stage .labels { position: absolute; inset: 0; }
-aside { overflow: auto; padding: 12px 16px; background: var(--panel); border-left: 1px solid #1f2937; }
-aside h2 { font-size: 16px; margin: 0 0 8px; }
-#log { padding-left: 20px; margin: 0; }
-#log li { margin-bottom: 6px; color: var(--muted); }
-#log li.current { color: var(--fg); }
-#log li.fail { color: var(--fail); }
-#log li.wait { color: var(--wait); }
-.node-label { font-weight: 700; font-size: 13px; padding: 1px 6px; border-radius: 4px; background: rgba(15, 23, 42, .75); white-space: nowrap; }
-.state-label { font-size: 12px; color: #fde68a; background: rgba(15, 23, 42, .75); padding: 1px 6px; border-radius: 4px; white-space: pre; text-align: center; }
-.state-label:empty { display: none; }
-.packet-label { font-size: 12px; font-weight: 700; color: #0f172a; background: #e2e8f0; padding: 0 6px; border-radius: 10px; white-space: nowrap; }
-.packet-label:empty { display: none; }
-.zone-label { font-size: 12px; color: var(--muted); white-space: nowrap; }
-@media (max-width: 760px) { main { grid-template-columns: 1fr; grid-template-rows: 1fr 40%; } aside { border-left: 0; border-top: 1px solid #1f2937; } }
+:root {
+  color-scheme: dark;
+  --bg: #0f172a;
+  --panel: #111827;
+  --fg: #e2e8f0;
+  --muted: #94a3b8;
+  --accent: #38bdf8;
+  --fail: #ef4444;
+  --wait: #f59e0b;
+}
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font:
+    14px/1.5 system-ui,
+    "Hiragino Sans",
+    sans-serif;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+header {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  padding: 8px 16px;
+  background: var(--panel);
+}
+select,
+button {
+  font: inherit;
+  color: var(--fg);
+  background: #1f2937;
+  border: 1px solid #374151;
+  border-radius: 6px;
+  padding: 4px 10px;
+}
+button:focus-visible,
+select:focus-visible {
+  outline: 2px solid var(--accent);
+}
+main {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  min-height: 0;
+}
+#stage {
+  position: relative;
+  min-height: 0;
+}
+#stage canvas,
+#stage .labels {
+  position: absolute;
+  inset: 0;
+}
+aside {
+  overflow: auto;
+  padding: 12px 16px;
+  background: var(--panel);
+  border-left: 1px solid #1f2937;
+}
+aside h2 {
+  font-size: 16px;
+  margin: 0 0 8px;
+}
+#log {
+  padding-left: 20px;
+  margin: 0;
+}
+#log li {
+  margin-bottom: 6px;
+  color: var(--muted);
+}
+#log li.current {
+  color: var(--fg);
+}
+#log li.fail {
+  color: var(--fail);
+}
+#log li.wait {
+  color: var(--wait);
+}
+.node-label {
+  font-weight: 700;
+  font-size: 13px;
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: rgba(15, 23, 42, 0.75);
+  white-space: nowrap;
+}
+.state-label {
+  font-size: 12px;
+  color: #fde68a;
+  background: rgba(15, 23, 42, 0.75);
+  padding: 1px 6px;
+  border-radius: 4px;
+  white-space: pre;
+  text-align: center;
+}
+.state-label:empty {
+  display: none;
+}
+.packet-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: #0f172a;
+  background: #e2e8f0;
+  padding: 0 6px;
+  border-radius: 10px;
+  white-space: nowrap;
+}
+.packet-label:empty {
+  display: none;
+}
+.zone-label {
+  font-size: 12px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+@media (max-width: 760px) {
+  main {
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr 40%;
+  }
+  aside {
+    border-left: 0;
+    border-top: 1px solid #1f2937;
+  }
+}

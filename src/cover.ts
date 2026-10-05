@@ -3,7 +3,11 @@ import * as THREE from "three";
 
 const INK = 0x2b2d6e;
 
-const ramp = new THREE.DataTexture(new Uint8Array([90, 90, 90, 255, 180, 180, 180, 255, 255, 255, 255, 255]), 3, 1);
+const ramp = new THREE.DataTexture(
+  new Uint8Array([90, 90, 90, 255, 180, 180, 180, 255, 255, 255, 255, 255]),
+  3,
+  1,
+);
 ramp.minFilter = THREE.NearestFilter;
 ramp.magFilter = THREE.NearestFilter;
 ramp.needsUpdate = true;
@@ -13,7 +17,12 @@ const toon = (color: number) => new THREE.MeshToonMaterial({ color, gradientMap:
 const outlineMat = new THREE.MeshBasicMaterial({ color: INK, side: THREE.BackSide });
 
 // 裏面だけを少し大きく描いて、漫画のような輪郭線にする
-function add(geometry: THREE.BufferGeometry, color: number, pos: [number, number, number], outline = 0.06): THREE.Mesh {
+function add(
+  geometry: THREE.BufferGeometry,
+  color: number,
+  pos: [number, number, number],
+  outline = 0.06,
+): THREE.Mesh {
   const mesh = new THREE.Mesh(geometry, toon(color));
   mesh.position.set(...pos);
   mesh.castShadow = true;
@@ -49,7 +58,12 @@ add(new THREE.CylinderGeometry(1.1, 1.1, 0.6, 32), 0xffa24c, [-1.5, 0.3, 0.5]);
 for (let row = 0; row < 4; row++) {
   for (let col = 0; col < 3; col++) {
     const offset = row % 2 === 0 ? 0 : 0.45;
-    add(new THREE.BoxGeometry(0.5, 0.48, 0.9), 0xff6b6b, [1.4, 0.26 + row * 0.5, -1.3 + col * 0.95 + offset - 0.2], 0.03);
+    add(
+      new THREE.BoxGeometry(0.5, 0.48, 0.9),
+      0xff6b6b,
+      [1.4, 0.26 + row * 0.5, -1.3 + col * 0.95 + offset - 0.2],
+      0.03,
+    );
   }
 }
 
@@ -61,9 +75,16 @@ const servers: THREE.Vector3[] = [];
 [-3.2, 0.5, 4.2].forEach((z, i) => {
   const pos = new THREE.Vector3(7, 1.3, z);
   servers.push(pos);
-  add(new THREE.BoxGeometry(1.4, 2.6, 1.4), [0x4cd98b, 0x3ccfb0, 0x4cd98b][i]!, [pos.x, pos.y, pos.z]);
+  add(new THREE.BoxGeometry(1.4, 2.6, 1.4), [0x4cd98b, 0x3ccfb0, 0x4cd98b][i]!, [
+    pos.x,
+    pos.y,
+    pos.z,
+  ]);
   for (let k = 0; k < 3; k++) {
-    const lamp = new THREE.Mesh(new THREE.SphereGeometry(0.09, 12, 8), new THREE.MeshBasicMaterial({ color: k === 0 ? 0xff5c8a : 0xffffff }));
+    const lamp = new THREE.Mesh(
+      new THREE.SphereGeometry(0.09, 12, 8),
+      new THREE.MeshBasicMaterial({ color: k === 0 ? 0xff5c8a : 0xffffff }),
+    );
     lamp.position.set(pos.x - 0.71, pos.y + 0.7 - k * 0.45, pos.z + 0.4);
     scene.add(lamp);
   }
@@ -80,7 +101,12 @@ function pipe(a: THREE.Vector3, b: THREE.Vector3, packets: number[]): void {
   tube.castShadow = true;
   scene.add(tube);
   packets.forEach((t, i) => {
-    add(new THREE.SphereGeometry(0.32, 24, 16), packetColors[(i + Math.round(t * 10)) % packetColors.length]!, curve.getPoint(t).toArray() as [number, number, number], 0.12);
+    add(
+      new THREE.SphereGeometry(0.32, 24, 16),
+      packetColors[(i + Math.round(t * 10)) % packetColors.length]!,
+      curve.getPoint(t).toArray() as [number, number, number],
+      0.12,
+    );
   });
 }
 const router = new THREE.Vector3(-1.5, 0.7, 0.5);
@@ -91,10 +117,19 @@ pipe(router, lb, [0.3, 0.72]);
 servers.forEach((s, i) => pipe(lb, new THREE.Vector3(s.x, 0.6, s.z), [[0.55], [0.4], [0.65]][i]!));
 
 // 吹き出しのような雲と、浮かぶ小さな立方体で、にぎやかさを足す
-[[9.5, 3.4, 6], [-4, 4.2, -8]].forEach(([x, y, z]) => {
-  [0, 0.8, -0.8].forEach((dx, i) => add(new THREE.SphereGeometry(i === 0 ? 0.8 : 0.6, 24, 16), 0xffffff, [x! + dx, y!, z!], 0.05));
+[
+  [9.5, 3.4, 6],
+  [-4, 4.2, -8],
+].forEach(([x, y, z]) => {
+  [0, 0.8, -0.8].forEach((dx, i) =>
+    add(new THREE.SphereGeometry(i === 0 ? 0.8 : 0.6, 24, 16), 0xffffff, [x! + dx, y!, z!], 0.05),
+  );
 });
-[[-3, 3.4, 4, 0xff5c8a], [3, 3.8, -4.5, 0x5aa9ff], [5.5, 3.2, 5, 0xffb000]].forEach(([x, y, z, c]) => {
+[
+  [-3, 3.4, 4, 0xff5c8a],
+  [3, 3.8, -4.5, 0x5aa9ff],
+  [5.5, 3.2, 5, 0xffb000],
+].forEach(([x, y, z, c]) => {
   const cube = add(new THREE.BoxGeometry(0.6, 0.6, 0.6), c!, [x!, y!, z!], 0.1);
   cube.rotation.set(0.6, 0.8, 0.2);
 });
@@ -116,7 +151,11 @@ camera.lookAt(0.2, 2.2, 0.5);
 camera.zoom = 0.9;
 camera.updateProjectionMatrix();
 
-const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
+const renderer = new THREE.WebGLRenderer({
+  antialias: true,
+  alpha: true,
+  preserveDrawingBuffer: true,
+});
 renderer.setPixelRatio(1);
 renderer.setSize(W, H);
 renderer.shadowMap.enabled = true;

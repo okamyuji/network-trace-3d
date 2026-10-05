@@ -20,7 +20,9 @@ const MOVING_DELAY_CS = 15;
 
 const server = await createServer({ logLevel: "error", server: { port: 5175, strictPort: true } });
 await server.listen();
-const browser = await chromium.launch({ args: ["--enable-unsafe-swiftshader", "--use-angle=swiftshader"] });
+const browser = await chromium.launch({
+  args: ["--enable-unsafe-swiftshader", "--use-angle=swiftshader"],
+});
 const page = await browser.newPage({ viewport: { width: 1100, height: 620 } });
 await page.goto("http://localhost:5175/");
 await page.waitForFunction(() => "__demo" in window);
@@ -30,18 +32,25 @@ for (const target of targets) {
   const [ch, sc] = target.split(":");
   const work = await mkdtemp(join(tmpdir(), "capture-"));
   const frames: { file: string; delay: number }[] = [];
-  const total = await page.evaluate(([c, s]) => {
-    const demo = (window as any).__demo;
-    // 最初のコマは、まだ何も送っていない初期状態（0 / N）にする
-    demo.open(c, s, 0);
-    return demo.current().total as number;
-  }, [ch, sc] as const);
+  const total = await page.evaluate(
+    ([c, s]) => {
+      const demo = (window as any).__demo;
+      // 最初のコマは、まだ何も送っていない初期状態（0 / N）にする
+      demo.open(c, s, 0);
+      return demo.current().total as number;
+    },
+    [ch, sc] as const,
+  );
   await page.waitForTimeout(300);
   const first = join(work, "0000.png");
   await page.screenshot({ path: first });
   frames.push({ file: first, delay: SETTLED_DELAY_CS });
   for (let step = 1; step <= total; step++) {
-    await page.evaluate(([c, s, n]) => (window as any).__demo.open(c, s, n), [ch, sc, step] as const);
+    await page.evaluate(([c, s, n]) => (window as any).__demo.open(c, s, n), [
+      ch,
+      sc,
+      step,
+    ] as const);
     let last = 0;
     for (const at of MOVING_MS) {
       await page.waitForTimeout(at - last);
@@ -58,7 +67,18 @@ for (const target of targets) {
   }
   const out = join(outDir, `${ch}-${sc}.gif`);
   const args = frames.flatMap((f) => ["-delay", String(f.delay), f.file]);
-  execFileSync("magick", [...args, "-loop", "0", "-resize", "880x", "-colors", "96", "-layers", "Optimize", out]);
+  execFileSync("magick", [
+    ...args,
+    "-loop",
+    "0",
+    "-resize",
+    "880x",
+    "-colors",
+    "96",
+    "-layers",
+    "Optimize",
+    out,
+  ]);
   await rm(work, { recursive: true });
   console.log(`${out}  ${frames.length}コマ`);
 }

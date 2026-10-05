@@ -4,13 +4,8 @@
   "commandRunner": {
     "command": "node --test \"src/**/*.test.ts\""
   },
-  "mutate": [
-    "src/chapters/**/sim.ts"
-  ],
-  "reporters": [
-    "json",
-    "progress"
-  ],
+  "mutate": ["src/chapters/**/sim.ts"],
+  "reporters": ["json", "progress"],
   "coverageAnalysis": "off",
   "concurrency": 6,
   "timeoutMS": 20000,

@@ -33,19 +33,40 @@ test("GETとHEADは安全、PUTとDELETEは安全ではないがべき等、POST
 });
 
 test("アプリの返したステータスはプロキシがそのまま中継する", () => {
-  assert.deepEqual(proxyRequest({ upstream: "ok", timeoutSec: 60 }), { status: 200, madeBy: "app" });
-  assert.deepEqual(proxyRequest({ upstream: "not-found", timeoutSec: 60 }), { status: 404, madeBy: "app" });
-  assert.deepEqual(proxyRequest({ upstream: "app-error", timeoutSec: 60 }), { status: 500, madeBy: "app" });
+  assert.deepEqual(proxyRequest({ upstream: "ok", timeoutSec: 60 }), {
+    status: 200,
+    madeBy: "app",
+  });
+  assert.deepEqual(proxyRequest({ upstream: "not-found", timeoutSec: 60 }), {
+    status: 404,
+    madeBy: "app",
+  });
+  assert.deepEqual(proxyRequest({ upstream: "app-error", timeoutSec: 60 }), {
+    status: 500,
+    madeBy: "app",
+  });
 });
 
 test("アプリにつながらない、または壊れた応答なら、プロキシ自身が502を作る", () => {
-  assert.deepEqual(proxyRequest({ upstream: "down", timeoutSec: 60 }), { status: 502, madeBy: "proxy" });
-  assert.deepEqual(proxyRequest({ upstream: "malformed", timeoutSec: 60 }), { status: 502, madeBy: "proxy" });
+  assert.deepEqual(proxyRequest({ upstream: "down", timeoutSec: 60 }), {
+    status: 502,
+    madeBy: "proxy",
+  });
+  assert.deepEqual(proxyRequest({ upstream: "malformed", timeoutSec: 60 }), {
+    status: 502,
+    madeBy: "proxy",
+  });
 });
 
 test("アプリの応答が待ち時間を超えたらプロキシ自身が504を作る。ちょうど同じなら間に合う", () => {
-  assert.deepEqual(proxyRequest({ upstream: "slow", responseSec: 61, timeoutSec: 60 }), { status: 504, madeBy: "proxy" });
-  assert.deepEqual(proxyRequest({ upstream: "slow", responseSec: 60, timeoutSec: 60 }), { status: 200, madeBy: "app" });
+  assert.deepEqual(proxyRequest({ upstream: "slow", responseSec: 61, timeoutSec: 60 }), {
+    status: 504,
+    madeBy: "proxy",
+  });
+  assert.deepEqual(proxyRequest({ upstream: "slow", responseSec: 60, timeoutSec: 60 }), {
+    status: 200,
+    madeBy: "app",
+  });
 });
 
 test("RFC 9110 で定義された8つのメソッドの性質がすべて表のとおりになる", () => {

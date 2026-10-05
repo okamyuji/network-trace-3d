@@ -22,9 +22,11 @@ const SERVER_ISN = 300;
 const BYTES = 100;
 
 function validate(count: number, lose: number[]): void {
-  if (!Number.isInteger(count) || count < 1) throw new Error(`送る数は1以上の整数で指定します: ${count}`);
+  if (!Number.isInteger(count) || count < 1)
+    throw new Error(`送る数は1以上の整数で指定します: ${count}`);
   for (const n of lose) {
-    if (!Number.isInteger(n) || n < 1 || n > count) throw new Error(`失う番号が範囲外です: ${n}（1〜${count}）`);
+    if (!Number.isInteger(n) || n < 1 || n > count)
+      throw new Error(`失う番号が範囲外です: ${n}（1〜${count}）`);
   }
 }
 
@@ -32,7 +34,13 @@ function validate(count: number, lose: number[]): void {
  * 1区切りずつ確認応答を待つ単純化したTCP。実際のTCPは複数の区切りをまとめて送れるが、
  * 「失われたら送り直す」という動きを1つずつ追えるように、ここでは待ってから次を送る。
  */
-export function tcpTransfer({ segments, lose }: { segments: number; lose: number[] }): TransferResult {
+export function tcpTransfer({
+  segments,
+  lose,
+}: {
+  segments: number;
+  lose: number[];
+}): TransferResult {
   validate(segments, lose);
   const events: Segment[] = [
     { from: "client", kind: "SYN", seq: CLIENT_ISN },
@@ -62,7 +70,13 @@ export function tcpTransfer({ segments, lose }: { segments: number; lose: number
   return { events, delivered };
 }
 
-export function udpTransfer({ datagrams, lose }: { datagrams: number; lose: number[] }): TransferResult {
+export function udpTransfer({
+  datagrams,
+  lose,
+}: {
+  datagrams: number;
+  lose: number[];
+}): TransferResult {
   validate(datagrams, lose);
   const events: Segment[] = [];
   const delivered: number[] = [];

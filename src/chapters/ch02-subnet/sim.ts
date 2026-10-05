@@ -61,6 +61,6 @@ export function decideNextHop(
 ): { sameSubnet: boolean; nextHop: string } {
   const { ip, prefix } = parseCidr(selfCidr);
   const mask = maskOf(prefix);
-  const sameSubnet = ((ip & mask) >>> 0) === ((parseIPv4(destination) & mask) >>> 0);
+  const sameSubnet = (ip & mask) >>> 0 === (parseIPv4(destination) & mask) >>> 0;
   return { sameSubnet, nextHop: sameSubnet ? destination : gateway };
 }

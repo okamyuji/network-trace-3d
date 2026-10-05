@@ -1,12 +1,4 @@
-export type NodeKind =
-  | "client"
-  | "server"
-  | "dns"
-  | "router"
-  | "firewall"
-  | "proxy"
-  | "lb"
-  | "ca";
+export type NodeKind = "client" | "server" | "dns" | "router" | "firewall" | "proxy" | "lb" | "ca";
 
 export interface StageNode {
   id: string;

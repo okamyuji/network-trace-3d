@@ -93,7 +93,11 @@ export function createStage(container: HTMLElement): Stage {
 
   const packet = new THREE.Mesh(
     new THREE.SphereGeometry(0.22, 24, 16),
-    new THREE.MeshStandardMaterial({ color: STATUS_COLOR.ok, emissive: STATUS_COLOR.ok, emissiveIntensity: 0.6 }),
+    new THREE.MeshStandardMaterial({
+      color: STATUS_COLOR.ok,
+      emissive: STATUS_COLOR.ok,
+      emissiveIntensity: 0.6,
+    }),
   );
   const packetLabel = label("", "packet-label");
   packetLabel.position.set(0, 0.45, 0);
@@ -101,7 +105,11 @@ export function createStage(container: HTMLElement): Stage {
   packet.visible = false;
   scene.add(packet);
 
-  const trailMaterial = new THREE.LineBasicMaterial({ color: 0x94a3b8, transparent: true, opacity: 0.6 });
+  const trailMaterial = new THREE.LineBasicMaterial({
+    color: 0x94a3b8,
+    transparent: true,
+    opacity: 0.6,
+  });
   let trail: THREE.Line | undefined;
   let curve: THREE.QuadraticBezierCurve3 | undefined;
   let stopAt = 1;
@@ -115,17 +123,23 @@ export function createStage(container: HTMLElement): Stage {
   function fitCamera(): void {
     const center = bounds.getCenter(new THREE.Vector3());
     const corners = [0, 1, 2, 3, 4, 5, 6, 7].map(
-      (i) => new THREE.Vector3(i & 1 ? bounds.max.x : bounds.min.x, i & 2 ? bounds.max.y : bounds.min.y, i & 4 ? bounds.max.z : bounds.min.z),
+      (i) =>
+        new THREE.Vector3(
+          i & 1 ? bounds.max.x : bounds.min.x,
+          i & 2 ? bounds.max.y : bounds.min.y,
+          i & 4 ? bounds.max.z : bounds.min.z,
+        ),
     );
     const placeAt = (distance: number): void => {
       camera.position.copy(center).addScaledVector(VIEW_DIR, distance);
       camera.lookAt(center);
       camera.updateMatrixWorld();
     };
-    const fits = (): boolean => corners.every((c) => {
-      const p = c.clone().project(camera);
-      return Math.abs(p.x) <= 0.94 && Math.abs(p.y) <= 0.9;
-    });
+    const fits = (): boolean =>
+      corners.every((c) => {
+        const p = c.clone().project(camera);
+        return Math.abs(p.x) <= 0.94 && Math.abs(p.y) <= 0.9;
+      });
     let near = 2;
     let far = 200;
     for (let i = 0; i < 30; i++) {
@@ -238,7 +252,10 @@ export function createStage(container: HTMLElement): Stage {
     const mid = a.clone().lerp(b, 0.5);
     mid.y += 1.5 + a.distanceTo(b) * 0.15;
     curve = new THREE.QuadraticBezierCurve3(a, mid, b);
-    trail = new THREE.Line(new THREE.BufferGeometry().setFromPoints(curve.getPoints(40)), trailMaterial);
+    trail = new THREE.Line(
+      new THREE.BufferGeometry().setFromPoints(curve.getPoints(40)),
+      trailMaterial,
+    );
     scene.add(trail);
     status = next;
     stopAt = STOP_AT[next];

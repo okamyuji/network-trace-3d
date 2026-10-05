@@ -18,30 +18,87 @@ const ENDING: Record<ConnectResult["outcome"], string> = {
   timeout: "何も返らず、待った末に「時間切れ（timed out）」になる",
 };
 
-function build(id: string, label: string, port: number, sg: SgRule[], iptables: IptablesRule[]): Scenario {
+function build(
+  id: string,
+  label: string,
+  port: number,
+  sg: SgRule[],
+  iptables: IptablesRule[],
+): Scenario {
   const r = connect({ sg, iptables, policy: "ACCEPT", host, port });
   const state = {
     sg: `許可: ${sg.map((x) => x.port).join(", ")}`,
-    fw: iptables.length ? iptables.map((x) => `--dport ${x.dport} -j ${x.target}`).join("\n") : "規則なし（ACCEPT）",
+    fw: iptables.length
+      ? iptables.map((x) => `--dport ${x.dport} -j ${x.target}`).join("\n")
+      : "規則なし（ACCEPT）",
     server: LISTEN_TEXT,
   };
   const syn = `SYN →:${port}`;
   const steps: Step[] = [
-    { title: `${port}番へ接続を始める`, log: `クライアントが ${host.ip}:${port} に SYN を送る`, from: "client", to: "sg", packet: syn, focus: ["sg"], state },
+    {
+      title: `${port}番へ接続を始める`,
+      log: `クライアントが ${host.ip}:${port} に SYN を送る`,
+      from: "client",
+      to: "sg",
+      packet: syn,
+      focus: ["sg"],
+      state,
+    },
   ];
   if (r.stoppedAt === "sg") {
-    steps.push({ title: "セキュリティグループで止まる", log: r.reason, from: "client", to: "sg", packet: syn, status: "fail", focus: ["sg"] });
+    steps.push({
+      title: "セキュリティグループで止まる",
+      log: r.reason,
+      from: "client",
+      to: "sg",
+      packet: syn,
+      status: "fail",
+      focus: ["sg"],
+    });
   } else {
-    steps.push({ title: "セキュリティグループを通る", log: `${port}番の許可規則がある`, from: "sg", to: "fw", packet: syn, focus: ["fw"] });
+    steps.push({
+      title: "セキュリティグループを通る",
+      log: `${port}番の許可規則がある`,
+      from: "sg",
+      to: "fw",
+      packet: syn,
+      focus: ["fw"],
+    });
     if (r.stoppedAt === "iptables") {
-      steps.push({ title: "iptablesで止まる", log: r.reason, from: "sg", to: "fw", packet: syn, status: "fail", focus: ["fw"] });
+      steps.push({
+        title: "iptablesで止まる",
+        log: r.reason,
+        from: "sg",
+        to: "fw",
+        packet: syn,
+        status: "fail",
+        focus: ["fw"],
+      });
       if (r.outcome === "refused") {
-        steps.push({ title: "拒否の返事が戻る", log: "--reject-with tcp-reset なら RST が返る", from: "fw", to: "client", packet: "RST", status: "fail", focus: ["client"] });
+        steps.push({
+          title: "拒否の返事が戻る",
+          log: "--reject-with tcp-reset なら RST が返る",
+          from: "fw",
+          to: "client",
+          packet: "RST",
+          status: "fail",
+          focus: ["client"],
+        });
       }
     } else {
-      steps.push({ title: "iptablesを通ってサーバーに届く", log: "OSが宛先ポートで待ち受けているプログラムを探す", from: "fw", to: "server", packet: syn, focus: ["server"] });
       steps.push({
-        title: r.outcome === "connected" ? "待ち受けていたので SYN-ACK を返す" : "待ち受けていないので RST を返す",
+        title: "iptablesを通ってサーバーに届く",
+        log: "OSが宛先ポートで待ち受けているプログラムを探す",
+        from: "fw",
+        to: "server",
+        packet: syn,
+        focus: ["server"],
+      });
+      steps.push({
+        title:
+          r.outcome === "connected"
+            ? "待ち受けていたので SYN-ACK を返す"
+            : "待ち受けていないので RST を返す",
         log: r.reason,
         from: "server",
         to: "client",
@@ -52,7 +109,15 @@ function build(id: string, label: string, port: number, sg: SgRule[], iptables: 
     }
   }
   if (r.outcome === "timeout") {
-    steps.push({ title: "応答を待ち続ける", log: "クライアントは SYN を何度か送り直してから諦める", from: "client", to: "sg", packet: syn, status: "wait", focus: ["client"] });
+    steps.push({
+      title: "応答を待ち続ける",
+      log: "クライアントは SYN を何度か送り直してから諦める",
+      from: "client",
+      to: "sg",
+      packet: syn,
+      status: "wait",
+      focus: ["client"],
+    });
   }
   steps.push({
     title: `結果: ${r.outcome}`,
