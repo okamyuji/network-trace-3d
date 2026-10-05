@@ -1,3 +1,5 @@
+# 公開から7日未満の版を入れない。依存の乗っ取りへの備え
+minimumReleaseAge: 10080
 overrides:
   qs: ">=6.16.0"
   vite@*: "catalog:"
