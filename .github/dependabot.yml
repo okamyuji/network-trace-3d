@@ -10,6 +10,7 @@ updates:
   - package-ecosystem: npm
     directory: /
     schedule:
-      interval: weekly
+      # cooldown に満たない版が pnpm の lockfile にあると更新が丸ごと失敗するので、毎日試して回復を早める
+      interval: daily
     cooldown:
       default-days: 7
