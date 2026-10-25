@@ -1,5 +1,8 @@
 # 公開から7日未満の版を入れない。依存の乗っ取りへの備え
 minimumReleaseAge: 10080
+# 脆弱性 GHSA-wjr9-j795-jxcr などの修正版を7日待たずに入れる
+minimumReleaseAgeExclude:
+  - fast-uri@3.1.9
 overrides:
   qs: ">=6.16.0"
   vite@*: "catalog:"
