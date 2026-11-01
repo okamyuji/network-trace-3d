@@ -1,16 +1,16 @@
 version: 2
 updates:
-  # 手元の pnpm は公開から7日未満の版を拒否するので、提案も7日たった版に合わせる
+  # 手元の pnpm は公開から3日未満の版を拒否するので、提案も3日たった版に合わせる
   - package-ecosystem: github-actions
     directory: /
     schedule:
       interval: weekly
     cooldown:
-      default-days: 7
+      default-days: 3
   - package-ecosystem: npm
     directory: /
     schedule:
       # cooldown に満たない版が pnpm の lockfile にあると更新が丸ごと失敗するので、毎日試して回復を早める
       interval: daily
     cooldown:
-      default-days: 7
+      default-days: 3
